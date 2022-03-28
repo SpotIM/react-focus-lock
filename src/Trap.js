@@ -1,13 +1,15 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import withSideEffect from 'react-clientside-effect';
-import moveFocusInside, {focusInside, focusIsHidden, getFocusabledIn} from 'focus-lock';
-import {deferAction} from './util';
-import {mediumFocus, mediumBlur, mediumEffect} from './medium';
+import * as React from "react";
+import PropTypes from "prop-types";
+import withSideEffect from "react-clientside-effect";
+import moveFocusInside, {
+  focusInside,
+  focusIsHidden,
+  getFocusabledIn,
+} from "@spotim/focus-lock";
+import { deferAction } from "./util";
+import { mediumFocus, mediumBlur, mediumEffect } from "./medium";
 
-const focusOnBody = () => (
-  document && document.activeElement === document.body
-);
+const focusOnBody = () => document && document.activeElement === document.body;
 
 const isFreeFocus = () => focusOnBody() || focusIsHidden();
 
@@ -20,17 +22,15 @@ let focusWasOutsideWindow = false;
 
 const defaultWhitelist = () => true;
 
-const focusWhitelisted = activeElement => (
-  (lastActiveTrap.whiteList || defaultWhitelist)(activeElement)
-);
+const focusWhitelisted = (activeElement) =>
+  (lastActiveTrap.whiteList || defaultWhitelist)(activeElement);
 
 const recordPortal = (observerNode, portaledElement) => {
-  lastPortaledElement = {observerNode, portaledElement};
+  lastPortaledElement = { observerNode, portaledElement };
 };
 
-const focusIsPortaledPair = element => (
-  lastPortaledElement && lastPortaledElement.portaledElement === element
-);
+const focusIsPortaledPair = (element) =>
+  lastPortaledElement && lastPortaledElement.portaledElement === element;
 
 function autoGuard(startIndex, end, step, allNodes) {
   let lastGuard = null;
@@ -56,7 +56,7 @@ function autoGuard(startIndex, end, step, allNodes) {
   }
 }
 
-const extractRef = ref => ((ref && 'current' in ref) ? ref.current : ref);
+const extractRef = (ref) => (ref && "current" in ref ? ref.current : ref);
 
 const focusWasOutside = (crossFrameOption) => {
   if (crossFrameOption) {
@@ -64,27 +64,34 @@ const focusWasOutside = (crossFrameOption) => {
     return Boolean(focusWasOutsideWindow);
   }
   // in other case return only of focus went a while aho
-  return focusWasOutsideWindow === 'meanwhile';
+  return focusWasOutsideWindow === "meanwhile";
 };
 
-const checkInHost = (check, el, boundary) => (
-  el
+const checkInHost = (check, el, boundary) =>
+  el &&
   // find host equal to active element and check nested active element
-  && (el.host === check && (!el.activeElement || boundary.contains(el.activeElement))
-  // dive up
-  || el.parentNode && checkInHost(check, el.parentNode, boundary)))
+  ((el.host === check &&
+    (!el.activeElement || boundary.contains(el.activeElement))) ||
+    // dive up
+    (el.parentNode && checkInHost(check, el.parentNode, boundary)));
 
 const withinHost = (activeElement, workingArea) => {
-  return workingArea.some(area => checkInHost(activeElement, area, area))
-}
+  return workingArea.some((area) => checkInHost(activeElement, area, area));
+};
 
 const activateTrap = () => {
   let result = false;
   if (lastActiveTrap) {
     const {
-      observed, persistentFocus, autoFocus, shards, crossFrame, focusOptions,
+      observed,
+      persistentFocus,
+      autoFocus,
+      shards,
+      crossFrame,
+      focusOptions,
     } = lastActiveTrap;
-    const workingNode = observed || (lastPortaledElement && lastPortaledElement.portaledElement);
+    const workingNode =
+      observed || (lastPortaledElement && lastPortaledElement.portaledElement);
     const activeElement = document && document.activeElement;
     if (workingNode) {
       const workingArea = [
@@ -94,19 +101,21 @@ const activateTrap = () => {
 
       if (!activeElement || focusWhitelisted(activeElement)) {
         if (
-          (persistentFocus || focusWasOutside(crossFrame))
-          || !isFreeFocus()
-          || (!lastActiveFocus && autoFocus)
+          persistentFocus ||
+          focusWasOutside(crossFrame) ||
+          !isFreeFocus() ||
+          (!lastActiveFocus && autoFocus)
         ) {
           if (
-            workingNode
-            && !(
+            workingNode &&
+            !(
               // active element is "inside" working area
-              (focusInside(workingArea) || (
-                  // check for shadow-dom contained elements
-                  activeElement && withinHost(activeElement, workingArea))
+              (
+                focusInside(workingArea) ||
+                // check for shadow-dom contained elements
+                (activeElement && withinHost(activeElement, workingArea)) ||
+                focusIsPortaledPair(activeElement, workingNode)
               )
-              || focusIsPortaledPair(activeElement, workingNode)
             )
           ) {
             if (document && !lastActiveFocus && activeElement && !autoFocus) {
@@ -116,7 +125,9 @@ const activateTrap = () => {
               }
               document.body.focus();
             } else {
-              result = moveFocusInside(workingArea, lastActiveFocus, {focusOptions});
+              result = moveFocusInside(workingArea, lastActiveFocus, {
+                focusOptions,
+              });
               lastPortaledElement = {};
             }
           }
@@ -128,12 +139,14 @@ const activateTrap = () => {
       if (document) {
         const newActiveElement = document && document.activeElement;
         const allNodes = getFocusabledIn(workingArea);
-        const focusedIndex = allNodes.map(({node}) => node).indexOf(newActiveElement);
+        const focusedIndex = allNodes
+          .map(({ node }) => node)
+          .indexOf(newActiveElement);
         if (focusedIndex > -1) {
           // remove old focus
           allNodes
-            .filter(({guard, node}) => guard && node.dataset.focusAutoGuard)
-            .forEach(({node}) => node.removeAttribute('tabIndex'));
+            .filter(({ guard, node }) => guard && node.dataset.focusAutoGuard)
+            .forEach(({ node }) => node.removeAttribute("tabIndex"));
 
           autoGuard(focusedIndex, allNodes.length, +1, allNodes);
           autoGuard(focusedIndex, -1, -1, allNodes);
@@ -152,9 +165,7 @@ const onTrap = (event) => {
   }
 };
 
-const onBlur = () => (
-  deferAction(activateTrap)
-);
+const onBlur = () => deferAction(activateTrap);
 
 const onFocus = (event) => {
   // detect portal
@@ -167,7 +178,7 @@ const onFocus = (event) => {
 
 const FocusWatcher = () => null;
 
-const FocusTrap = ({children}) => (
+const FocusTrap = ({ children }) => (
   <div onBlur={onBlur} onFocus={onFocus}>
     {children}
   </div>
@@ -178,28 +189,27 @@ FocusTrap.propTypes = {
 };
 
 const onWindowBlur = () => {
-  focusWasOutsideWindow = 'just';
+  focusWasOutsideWindow = "just";
   // using setTimeout to set  this variable after React/sidecar reaction
   setTimeout(() => {
-    focusWasOutsideWindow = 'meanwhile';
+    focusWasOutsideWindow = "meanwhile";
   }, 0);
 };
 
 const attachHandler = () => {
-  document.addEventListener('focusin', onTrap);
-  document.addEventListener('focusout', onBlur);
-  window.addEventListener('blur', onWindowBlur);
+  document.addEventListener("focusin", onTrap);
+  document.addEventListener("focusout", onBlur);
+  window.addEventListener("blur", onWindowBlur);
 };
 
 const detachHandler = () => {
-  document.removeEventListener('focusin', onTrap);
-  document.removeEventListener('focusout', onBlur);
-  window.removeEventListener('blur', onWindowBlur);
+  document.removeEventListener("focusin", onTrap);
+  document.removeEventListener("focusout", onBlur);
+  window.removeEventListener("blur", onWindowBlur);
 };
 
 function reducePropsToState(propsList) {
-  return propsList
-    .filter(({disabled}) => !disabled);
+  return propsList.filter(({ disabled }) => !disabled);
 }
 
 function handleStateChangeOnClient(traps) {
@@ -216,7 +226,7 @@ function handleStateChangeOnClient(traps) {
   if (lastTrap && !sameTrap) {
     lastTrap.onDeactivation();
     // return focus only of last trap was removed
-    if (!traps.filter(({id}) => id === lastTrap.id).length) {
+    if (!traps.filter(({ id }) => id === lastTrap.id).length) {
       // allow defer is no other trap is awaiting restore
       lastTrap.returnFocus(!trap);
     }
@@ -238,12 +248,14 @@ function handleStateChangeOnClient(traps) {
 // bind medium
 mediumFocus.assignSyncMedium(onFocus);
 mediumBlur.assignMedium(onBlur);
-mediumEffect.assignMedium(cb => cb({
-  moveFocusInside,
-  focusInside,
-}));
+mediumEffect.assignMedium((cb) =>
+  cb({
+    moveFocusInside,
+    focusInside,
+  })
+);
 
 export default withSideEffect(
   reducePropsToState,
-  handleStateChangeOnClient,
+  handleStateChangeOnClient
 )(FocusWatcher);

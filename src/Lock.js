@@ -1,13 +1,20 @@
-import * as React from 'react';
+import * as React from "react";
 import {
-  node, bool, string, any, arrayOf, oneOfType, object, func,
-} from 'prop-types';
-import * as constants from 'focus-lock/constants';
-import { useMergeRefs } from 'use-callback-ref';
+  node,
+  bool,
+  string,
+  any,
+  arrayOf,
+  oneOfType,
+  object,
+  func,
+} from "prop-types";
+import * as constants from "@spotim/focus-lock/constants";
+import { useMergeRefs } from "use-callback-ref";
 
-import { useEffect } from 'react';
-import { hiddenGuard } from './FocusGuard';
-import { mediumFocus, mediumBlur, mediumSidecar } from './medium';
+import { useEffect } from "react";
+import { hiddenGuard } from "./FocusGuard";
+import { mediumFocus, mediumBlur, mediumSidecar } from "./medium";
 
 const emptyArray = [];
 
@@ -30,7 +37,7 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
     whiteList,
     hasPositiveIndices,
     shards = emptyArray,
-    as: Container = 'div',
+    as: Container = "div",
     lockProps: containerProps = {},
     sideCar: SideCar,
 
@@ -46,9 +53,8 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
   // SIDE EFFECT CALLBACKS
 
   const onActivation = React.useCallback(() => {
-    originalFocusedElement.current = (
-      originalFocusedElement.current || (document && document.activeElement)
-    );
+    originalFocusedElement.current =
+      originalFocusedElement.current || (document && document.activeElement);
     if (observed.current && onActivationCallback) {
       onActivationCallback(observed.current);
     }
@@ -70,24 +76,33 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
     }
   }, []);
 
-  const returnFocus = React.useCallback((allowDefer) => {
-    const { current: returnFocusTo } = originalFocusedElement;
-    if (returnFocusTo && returnFocusTo.focus) {
-      const howToReturnFocus = typeof shouldReturnFocus === 'function' ? shouldReturnFocus(returnFocusTo) : shouldReturnFocus;
-      if (howToReturnFocus) {
-        const returnFocusOptions = typeof howToReturnFocus === 'object' ? howToReturnFocus : undefined;
-        originalFocusedElement.current = null;
+  const returnFocus = React.useCallback(
+    (allowDefer) => {
+      const { current: returnFocusTo } = originalFocusedElement;
+      if (returnFocusTo && returnFocusTo.focus) {
+        const howToReturnFocus =
+          typeof shouldReturnFocus === "function"
+            ? shouldReturnFocus(returnFocusTo)
+            : shouldReturnFocus;
+        if (howToReturnFocus) {
+          const returnFocusOptions =
+            typeof howToReturnFocus === "object" ? howToReturnFocus : undefined;
+          originalFocusedElement.current = null;
 
-        if (allowDefer) {
-          // React might return focus after update
-          // it's safer to defer the action
-          Promise.resolve().then(() => returnFocusTo.focus(returnFocusOptions));
-        } else {
-          returnFocusTo.focus(returnFocusOptions);
+          if (allowDefer) {
+            // React might return focus after update
+            // it's safer to defer the action
+            Promise.resolve().then(() =>
+              returnFocusTo.focus(returnFocusOptions)
+            );
+          } else {
+            returnFocusTo.focus(returnFocusOptions);
+          }
         }
       }
-    }
-  }, [shouldReturnFocus]);
+    },
+    [shouldReturnFocus]
+  );
 
   // MEDIUM CALLBACKS
 
@@ -109,28 +124,30 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
     }
   }, []);
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (typeof allowTextSelection !== 'undefined') {
+  if (process.env.NODE_ENV !== "production") {
+    if (typeof allowTextSelection !== "undefined") {
       // eslint-disable-next-line no-console
-      console.warn('React-Focus-Lock: allowTextSelection is deprecated and enabled by default');
+      console.warn(
+        "React-Focus-Lock: allowTextSelection is deprecated and enabled by default"
+      );
     }
 
     React.useEffect(() => {
       if (!observed.current) {
         // eslint-disable-next-line no-console
-        console.error('FocusLock: could not obtain ref to internal node');
+        console.error("FocusLock: could not obtain ref to internal node");
       }
     }, []);
   }
 
   const lockProps = {
-    [constants.FOCUS_DISABLED]: disabled && 'disabled',
+    [constants.FOCUS_DISABLED]: disabled && "disabled",
     [constants.FOCUS_GROUP]: group,
     ...containerProps,
   };
 
   const hasLeadingGuards = noFocusGuards !== true;
-  const hasTailingGuards = hasLeadingGuards && (noFocusGuards !== 'tail');
+  const hasTailingGuards = hasLeadingGuards && noFocusGuards !== "tail";
 
   const mergedRef = useMergeRefs([parentRef, setObserveNode]);
 
@@ -138,12 +155,22 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
     <React.Fragment>
       {hasLeadingGuards && [
         // nearest focus guard
-        <div key="guard-first" data-focus-guard tabIndex={disabled ? -1 : 0} style={hiddenGuard} />,
+        <div
+          key="guard-first"
+          data-focus-guard
+          tabIndex={disabled ? -1 : 0}
+          style={hiddenGuard}
+        />,
 
         // first tabbed element guard
-        hasPositiveIndices
-          ? <div key="guard-nearest" data-focus-guard tabIndex={disabled ? -1 : 1} style={hiddenGuard} />
-          : null,
+        hasPositiveIndices ? (
+          <div
+            key="guard-nearest"
+            data-focus-guard
+            tabIndex={disabled ? -1 : 1}
+            style={hiddenGuard}
+          />
+        ) : null,
       ]}
       {!disabled && (
         <SideCar
@@ -171,10 +198,13 @@ const FocusLock = React.forwardRef(function FocusLockUI(props, parentRef) {
       >
         {children}
       </Container>
-      {
-        hasTailingGuards
-        && <div data-focus-guard tabIndex={disabled ? -1 : 0} style={hiddenGuard} />
-      }
+      {hasTailingGuards && (
+        <div
+          data-focus-guard
+          tabIndex={disabled ? -1 : 0}
+          style={hiddenGuard}
+        />
+      )}
     </React.Fragment>
   );
 });
@@ -222,7 +252,7 @@ FocusLock.defaultProps = {
   className: undefined,
   whiteList: undefined,
   shards: undefined,
-  as: 'div',
+  as: "div",
   lockProps: {},
 
   onActivation: undefined,

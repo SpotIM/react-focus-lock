@@ -1,8 +1,8 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import * as constants from 'focus-lock/constants';
-import { inlineProp } from './util';
-import { mediumEffect } from './medium';
+import * as React from "react";
+import PropTypes from "prop-types";
+import * as constants from "@spotim/focus-lock/constants";
+import { inlineProp } from "./util";
+import { mediumEffect } from "./medium";
 
 export const useFocusInside = (observedRef) => {
   React.useEffect(() => {
