@@ -95,7 +95,7 @@
   "dependencies": {
     "@babel/runtime": "^7.0.0",
     "focus-lock": "^0.10.2",
-    "prop-types": "^15.6.2",
+    "prop-types": "^15.8.1",
     "react-clientside-effect": "^1.2.5",
     "use-callback-ref": "^1.2.5",
     "use-sidecar": "^1.0.5"
