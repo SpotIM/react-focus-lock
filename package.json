@@ -98,6 +98,6 @@
     "prop-types": "^15.6.2",
     "react-clientside-effect": "^1.2.5",
     "use-callback-ref": "^1.2.5",
-    "use-sidecar": "^1.0.5"
+    "use-sidecar": "^1.1.0"
   }
 }
