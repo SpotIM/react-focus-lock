@@ -1,0 +1,25 @@
+# Migrated from CircleCI — push to master: lint, size, test. Repo: react-focus-lock
+name: CI (from CircleCI)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: yarn
+      - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_GITHUB_ACTIONS_RO }}" > .npmrc
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: NODE_OPTIONS=--openssl-legacy-provider yarn size
+      - run: yarn test
